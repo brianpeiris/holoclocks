@@ -36,10 +36,6 @@ const queryParams = new URLSearchParams(location.search);
 
   const scene = new THREE.Scene();
 
-  // scene.background = new THREE.Color("white");
-
-  // scene.background = textureLoader.load("hotel_room.jpg");
-  // scene.background.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = textureLoader.load("hotel_room.jpg");
   scene.environment.mapping = THREE.EquirectangularReflectionMapping;
 
@@ -54,7 +50,7 @@ const queryParams = new URLSearchParams(location.search);
 
   const back = new THREE.Mesh(
     new THREE.BoxGeometry(3, 4, 0.1),
-    new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 1, metalness: 0 })
+    new THREE.MeshStandardMaterial({ color: config.backColor, roughness: 1, metalness: 0 })
   );
   back.receiveShadow = true;
   if (!queryParams.has("forward")) {
