@@ -23,8 +23,8 @@ const queryParams = new URLSearchParams(location.search);
   gui.remember(config);
   gui.add(config, "render2d").name("render 2d").setValue(false).onChange((val) => renderer.render2d = val);
   gui.addColor(config, "backColor").name("background color").onChange((val) => back.material.color.setStyle(val));
-  gui.addColor(config, "minuteColor").name("minute hand color").onChange((val) => minuteHandMesh.material.color.setStyle(val));
   gui.addColor(config, "hourColor").name("hour hand color").onChange((val) => hourHandMesh.material.color.setStyle(val));
+  gui.addColor(config, "minuteColor").name("minute hand color").onChange((val) => minuteHandMesh.material.color.setStyle(val));
   gui.addColor(config, "secondColor").name("second hand color").onChange((val) => secondHandMesh.material.color.setStyle(val));
   gui.addColor(config, "markerColor").name("marker color").onChange((val) => dots.material.color.setStyle(val));
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
@@ -66,7 +66,6 @@ const queryParams = new URLSearchParams(location.search);
   const minuteHandMesh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.4, 0.01), new THREE.MeshStandardMaterial({roughness: 0.4, metalness: 0.2, color: config.minuteColor}));
   minuteHandMesh.castShadow = true;
   minuteHandMesh.position.y = 0.5;
-  minuteHandMesh.position.z = -0.02;
   minuteHand.add(minuteHandMesh);
   scene.add(minuteHand);
 
@@ -74,6 +73,7 @@ const queryParams = new URLSearchParams(location.search);
   const hourHandMesh = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 0.01), new THREE.MeshStandardMaterial({roughness: 0.4, metalness: 0.2, color: config.hourColor}));
   hourHandMesh.castShadow = true;
   hourHandMesh.position.y = 0.5;
+  hourHandMesh.position.z = -0.02;
   hourHand.add(hourHandMesh);
   scene.add(hourHand);
 
@@ -108,8 +108,8 @@ const queryParams = new URLSearchParams(location.search);
   renderer.webglRenderer.setAnimationLoop(() => {
     const date = new Date();
     secondHand.rotation.z = -date.getSeconds() / 60 * (Math.PI * 2);
-    minuteHand.rotation.z = -date.getMinutes() / 60 * (Math.PI * 2);
-    hourHand.rotation.z = -(date.getHours() % 12) / 12 * (Math.PI * 2);
+    minuteHand.rotation.z = -(date.getMinutes() + date.getSeconds() / 60) / 60 * (Math.PI * 2);
+    hourHand.rotation.z = -(date.getHours() % 12 + date.getMinutes() / 60 ) / 12 * (Math.PI * 2);
     renderer.render(scene, camera);
   });
 })();
