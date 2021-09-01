@@ -1,17 +1,19 @@
 import "./global";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
+import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
-import { Digit } from "./digit.js";
+import { Spline3 } from "./spline3.js";
 
 const queryParams = new URLSearchParams(location.search);
 
 (async () => {
   const stats = new Stats();
+  stats.domElement.style.left = null;
+  stats.domElement.style.right = 0;
   document.body.append(stats.domElement);
 
   const gui = new dat.GUI({ hideable: false });
@@ -20,20 +22,22 @@ const queryParams = new URLSearchParams(location.search);
   gui.domElement.addEventListener('click', e => e.stopPropagation());
   const config = {
     render2d: false,
-    backColor: "#000000",
+    backColor: "#ffffff",
+    colorOne: "#000000",
+    colorTwo: "#666666",
     shadows: true,
-    strength: 0.37,
-    subtract: 215
   };
-  function setBackColor(val) {
-    back.material.color.setStyle(val)
-  }
   gui.remember(config);
+  function setDigitColors(num, color) {
+    for (const digit of digits) {
+      digit.setColor(num, color);
+    }
+  }
   gui.add(config, "render2d").name("render 2d").setValue(false).onChange((val) => renderer.render2d = val);
-  gui.addColor(config, "backColor").name("background color").onChange(setBackColor);
+  gui.addColor(config, "backColor").name("background color").onChange((val) => back.material.color.setStyle(val));
+  gui.addColor(config, "colorOne").name("color one").onChange((val) => setDigitColors(1, val));
+  gui.addColor(config, "colorTwo").name("color two").onChange((val) => setDigitColors(0, val));
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
-  gui.add(config, "strength");
-  gui.add(config, "subtract");
 
   const textureLoader = new THREE.TextureLoader();
 
@@ -49,32 +53,44 @@ const queryParams = new URLSearchParams(location.search);
   scene.add(directionalLight);
 
   const frame = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 2), new THREE.MeshStandardMaterial({ wireframe: true }));
-  scene.add(frame);
+  //scene.add(frame);
 
   const back = new THREE.Mesh(
     new THREE.BoxGeometry(3, 4, 0.1),
-    new THREE.MeshStandardMaterial({ color: config.backColor, roughness: 0.1, metalness: 0, vertexColors: true, envMapIntensity: 0.1 })
+    new THREE.MeshStandardMaterial({ color: config.backColor })
   );
   back.receiveShadow = true;
   back.position.z = -0.56;
-  // scene.add(back);
+  scene.add(back);
 
   const backPos = -1.0;
   const frontPos = -0.1;
 
+  const svgs = [
+    await new Promise(resolve => new SVGLoader().load("zero.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("one.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("two.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("three.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("four.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("five.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("six.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("seven.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("eight.svg", resolve)),
+    await new Promise(resolve => new SVGLoader().load("nine.svg", resolve)),
+  ];
+
   const digits = [
-    new Digit(frontPos, backPos),
-    new Digit(frontPos, backPos),
-    new Digit(frontPos, backPos),
-    new Digit(frontPos, backPos),
-    new Digit(frontPos, backPos),
-    new Digit(frontPos, backPos),
+    new Spline3(svgs, config.colorOne, config.colorTwo),
+    new Spline3(svgs, config.colorOne, config.colorTwo),
+    new Spline3(svgs, config.colorOne, config.colorTwo),
+    new Spline3(svgs, config.colorOne, config.colorTwo),
+    new Spline3(svgs, config.colorOne, config.colorTwo),
+    new Spline3(svgs, config.colorOne, config.colorTwo),
   ];
   for (let i = 0; i < digits.length; i++) {
     const digit = digits[i];
-    digit.scale.setScalar(0.8);
-    digit.position.x = i % 2 === 0 ? -0.4 : 0.4;
-    digit.position.y = Math.ceil(-i / 2) * 1.1 + 1.1;
+    digit.position.x = (i % 2 === 0 ? -0.5 : 0.5) - 0.25;
+    digit.position.y = (Math.ceil(-i / 2) * 1.1 + 1.1) + 0.5;
     scene.add(digit);
   }
 
@@ -91,18 +107,17 @@ const queryParams = new URLSearchParams(location.search);
     new OrbitControls(camera, renderer.domElement);
   }
 
-  const marchingCubes = new MarchingCubes(60, new THREE.MeshStandardMaterial({roughness: 0.1, metalness: 0, vertexColors: true, envMapIntensity: 0.1}), false, true);
-  marchingCubes.scale.setScalar(2.2);
-  marchingCubes.position.z = 1.2;
-  //window.marchingCubes = marchingCubes;
-  scene.add(marchingCubes);
-  const backColor = new THREE.Color("black");
-  const foreColor = new THREE.Color("white");
-  const color = new THREE.Color();
-  const worldPos = new THREE.Vector3();
-
-  renderer.webglRenderer.setAnimationLoop(() => {
+  const clock = new THREE.Clock();
+  renderer.webglRenderer.setAnimationLoop((time) => {
+    const delta = clock.getDelta();
     stats.update();
+
+    if (time > 3000) {
+      for (let i = 0; i < digits.length; i++) {
+        digits[i].update();
+      }
+    }
+
     const date = new Date();
 
     const hours = String(date.getHours()).padStart(2, "0");
@@ -116,27 +131,6 @@ const queryParams = new URLSearchParams(location.search);
     const seconds = String(date.getSeconds()).padStart(2, "0");
     digits[4].set(seconds[0]);
     digits[5].set(seconds[1]);
-
-    marchingCubes.reset();
-    for (const digit of digits) {
-      const dots = digit.dots;
-      for (let i = 0; i < dots.length; i++) {
-        dots[i].updateWorldMatrix(true, true);
-        dots[i].getWorldPosition(worldPos);
-        worldPos.multiplyScalar(0.28);
-        worldPos.addScalar(+0.5);
-        color.lerpColors(backColor, foreColor, THREE.MathUtils.mapLinear(worldPos.z, backPos, frontPos, -0.3, 1));
-        marchingCubes.addBall(
-          worldPos.x,
-          worldPos.y,
-          worldPos.z - 0.25,
-          config.strength, config.subtract, color);
-      }
-    }
-    marchingCubes.addPlaneX(config.strength, config.subtract);
-    marchingCubes.addPlaneY(config.strength, config.subtract);
-    marchingCubes.addPlaneZ(config.strength, config.subtract);
-
 
     renderer.render(scene, camera);
   });

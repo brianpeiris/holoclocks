@@ -13,8 +13,8 @@ module.exports = {
       description: "A flip clock.",
     },
     {
-      name: "magnetic",
-      description: "A ferromagnetic clock simulation.",
+      name: "flow",
+      description: "A clock with a particle flow simulation.",
     },
   ],
 };

@@ -39,3 +39,8 @@ body > p {
 h2 {
   margin: 0.2em 0;
 }
+.github, .github a {
+  margin-top: 2em;
+  color: black;
+  font-size: 10pt;
+}
