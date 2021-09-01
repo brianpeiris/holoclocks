@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>flip</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      .dg.main {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+      .dg.main .save-row {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <style>
+  #textures {
+    position: absolute;
+    top: 0;
+  }
+  #textures canvas {
+    width: 128px;
+    height: 128px;
+    outline: 1px solid red;
+  }
+</style>
+<div id="textures"></div>
+    <script src="bundle.js?v=1630475686840"></script>
+  </body>
+</html>

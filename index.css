@@ -1,0 +1,41 @@
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+h1 {
+  margin: 0;
+  margin-top: 0.5em;
+}
+body > p {
+  margin: 3em;
+}
+#clocks {
+  max-width: 800px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.clock {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  margin: 0.5em;
+  margin-bottom: 1.5em;
+  color: black;
+  text-decoration: none;
+}
+.clock img {
+  background: black;
+  height: 260px;
+  object-fit: cover;
+}
+.clock p {
+  margin: 0;
+  font-size: 10pt;
+}
+h2 {
+  margin: 0.2em 0;
+}

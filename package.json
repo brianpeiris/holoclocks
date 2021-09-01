@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "start": "eleventy --serve",
+    "build": "npm run build:js; npm run build:html",
+    "build:html": "eleventy",
+    "build:js": "bash build-clocks.sh"
+  },
+  "dependencies": {
+    "@11ty/eleventy": "^1.0.0-canary.41",
+    "esbuild": "^0.12.24"
+  }
+}

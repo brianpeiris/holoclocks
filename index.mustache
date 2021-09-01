@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Holo Clocks</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <h1>Holo Clocks</h1>
+    <p>Holographic clocks for the <a href="https://lookingglassfactory.com/portrait">Looking Glass Portrait</a></p>
+    <div id="clocks">
+      {{#clocks}}
+      <a class="clock" href="clocks/{{name}}">
+        <img src="clocks/{{name}}/thumb.gif" />
+        <h2>{{name}}</h2>
+        <p>{{description}}</p>
+      </a>
+      {{/clocks}}
+    </div>
+  </body>
+</html>
