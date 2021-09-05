@@ -2,19 +2,23 @@ module.exports = {
   clocks: [
     {
       name: "simple",
-      description: "A simple numeric clock.",
+      description: "A simple numeric clock",
     },
     {
       name: "analog",
-      description: "A simple analog clock.",
+      description: "A simple analog clock",
     },
     {
       name: "flip",
-      description: "A flip clock.",
+      description: "A flip clock",
     },
     {
       name: "flow",
-      description: "A clock with a particle flow simulation.",
+      description: "A clock with a particle flow simulation",
+    },
+    {
+      name: "nixie",
+      description: "A clock made of nixie tubes",
     },
   ],
 };
