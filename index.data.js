@@ -20,5 +20,9 @@ module.exports = {
       name: "nixie",
       description: "A clock made of nixie tubes",
     },
+    {
+      name: "sand",
+      description: "A clock made with a sand simulation",
+    },
   ],
 };
