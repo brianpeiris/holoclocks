@@ -10,18 +10,32 @@ const queryParams = new URLSearchParams(location.search);
   const gui = new dat.GUI({ hideable: false });
   gui.useLocalStorage = true;
   document.body.append(gui.domElement);
-  gui.domElement.addEventListener('click', e => e.stopPropagation());
+  gui.domElement.addEventListener("click", (e) => e.stopPropagation());
   const config = {
     render2d: false,
     backColor: "#ffffff",
     textColor: "#000000",
     shadows: true,
+    horizontal: true,
   };
   gui.remember(config);
-  gui.add(config, "render2d").name("render 2d").setValue(false).onChange((val) => renderer.render2d = val);
-  gui.addColor(config, "backColor").name("background color").onChange((val) => back.material.color.setStyle(val));
-  gui.addColor(config, "textColor").name("text color").onChange((val) => timeMesh.material.color.setStyle(val));
-  gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
+  gui
+    .add(config, "render2d")
+    .name("render 2d")
+    .setValue(false)
+    .onChange((val) => (renderer.render2d = val));
+  gui
+    .add(config, "horizontal")
+    .onChange(layoutMeshes);
+  gui
+    .addColor(config, "backColor")
+    .name("background color")
+    .onChange((val) => back.material.color.setStyle(val));
+  gui
+    .addColor(config, "textColor")
+    .name("text color")
+    .onChange((val) => timeMat.color.setStyle(val));
+  gui.add(config, "shadows").onChange((val) => (directionalLight.castShadow = val));
 
   const textureLoader = new THREE.TextureLoader();
 
@@ -30,6 +44,7 @@ const queryParams = new URLSearchParams(location.search);
   scene.environment = textureLoader.load("hotel_room.jpg");
   scene.environment.mapping = THREE.EquirectangularReflectionMapping;
 
+  scene.add(new THREE.AmbientLight(0xaaaaaa));
   const directionalLight = new THREE.DirectionalLight("white", 0.5);
   directionalLight.castShadow = config.shadows;
   directionalLight.shadow.mapSize.setScalar(2048);
@@ -43,23 +58,74 @@ const queryParams = new URLSearchParams(location.search);
     new THREE.BoxGeometry(3, 4, 0.1),
     new THREE.MeshStandardMaterial({ color: config.backColor, roughness: 1, metalness: 0 })
   );
+  back.scale.setScalar(2);
   back.receiveShadow = true;
   back.position.z = -0.5;
   scene.add(back);
 
-  const font = await new Promise(resolve => {
-    new THREE.FontLoader().load('droid_sans_mono_regular.typeface.json', resolve);
+  const font = await new Promise((resolve) => {
+    new THREE.FontLoader().load("font.json", resolve);
   });
 
-  const timeMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(),
-    new THREE.MeshStandardMaterial({ color: config.textColor, wireframe: false})
-  );
-  timeMesh.castShadow = true;
-  timeMesh.position.x = -1.41;
-  timeMesh.scale.setScalar(0.42);
-  window.timeMesh = timeMesh;
-  scene.add(timeMesh);
+  const geoCache = new Map();
+
+  const timeMat = new THREE.MeshStandardMaterial({ color: config.textColor, wireframe: false })
+  function makeComponentMesh() {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(),
+      timeMat
+    );
+    mesh.castShadow = true;
+    mesh.scale.setScalar(0.42);
+    return mesh;
+  }
+  function makeSeparatorMesh() {
+    const mesh = new THREE.Mesh(
+      getGeo(":"),
+      timeMat
+    );
+    mesh.castShadow = true;
+    mesh.scale.setScalar(0.42);
+    return mesh;
+  }
+  const hourMesh = makeComponentMesh();
+  const sepOne = makeSeparatorMesh();
+  const minuteMesh = makeComponentMesh();
+  const sepTwo = makeSeparatorMesh();
+  const secondMesh = makeComponentMesh();
+  const timeGroup = new THREE.Group();
+  timeGroup.add(hourMesh);
+  timeGroup.add(sepOne);
+  timeGroup.add(minuteMesh);
+  timeGroup.add(sepTwo);
+  timeGroup.add(secondMesh);
+  scene.add(timeGroup);
+
+  function layoutMeshes() {
+    hourMesh.position.setScalar(0);
+    minuteMesh.position.setScalar(0);
+    secondMesh.position.setScalar(0);
+    if (config.horizontal) {
+      sepOne.visible = sepTwo.visible = true;
+      sepOne.position.set(-0.29, 0.07, 0);
+      sepTwo.position.set(0.76, 0.07, 0);
+      timeGroup.position.set(-0.48, -0.25, 0.1);
+      timeGroup.scale.setScalar(1);
+      const offset = 1.05;
+      hourMesh.position.x = -offset;
+      secondMesh.position.x = offset;
+    } else {
+      sepOne.visible = sepTwo.visible = false;
+      timeGroup.position.set(-0.85, -0.4, 0.1);
+      timeGroup.scale.setScalar(1.8);
+      hourMesh.position.y = 0.7;
+      secondMesh.position.y = -0.7;
+    }
+  }
+  console.log(config.horizontal)
+  layoutMeshes();
+
+  // scene.add(new THREE.AxesHelper());
 
   const renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
   renderer.render2d = queryParams.has("2d") || config.render2d;
@@ -74,25 +140,40 @@ const queryParams = new URLSearchParams(location.search);
     new OrbitControls(camera, renderer.domElement);
   }
 
-  let lastTimeString = '';
   function format(n) {
-    return String(n).padStart(2, '0');
+    // return "00";
+    return String(n).padStart(2, "0");
   }
-  const geoCache = new Map();
   function getGeo(timeString) {
     if (!geoCache.has(timeString)) {
-      geoCache.set(timeString, new THREE.TextGeometry(timeString, { font, size: 1, height: 0.2, curveSegments: 6 }));
+      geoCache.set(
+        timeString,
+        new THREE.TextGeometry(timeString, {
+          font,
+          bevelEnabled: true,
+          bevelSize: 0,
+          bevelThickness: 0,
+          bevelOffset: 0.07,
+          size: 1.25,
+          height: 0.8,
+          curveSegments: 6,
+        })
+      );
     }
     return geoCache.get(timeString);
   }
+  function updateMesh(mesh, str) {
+    if (mesh.userData.lastStr !== str) {
+      mesh.geometry = getGeo(str);
+      mesh.geometry.needsUpdate = true;
+      mesh.userData.lastStr = str;
+    }
+  }
   renderer.webglRenderer.setAnimationLoop(() => {
     const date = new Date();
-    const timeString = `${format(date.getHours())}:${format(date.getMinutes())}:${format(date.getSeconds())}`;
-    if (timeString !== lastTimeString) {
-      timeMesh.geometry = getGeo(timeString);
-      timeMesh.geometry.needsUpdate = true;
-      lastTimeString = timeString;
-    }
+    updateMesh(hourMesh, format(date.getHours()));
+    updateMesh(minuteMesh, format(date.getMinutes()));
+    updateMesh(secondMesh, format(date.getSeconds()));
     renderer.render(scene, camera);
   });
 })();
