@@ -111,7 +111,7 @@ const queryParams = new URLSearchParams(location.search);
       sepTwo.position.set(0.76, 0.07, 0);
       timeGroup.position.set(-0.48, -0.25, 0.1);
       timeGroup.scale.setScalar(1);
-      const offset = 1.05;
+      const offset = 1.08;
       hourMesh.position.x = -offset;
       secondMesh.position.x = offset;
     } else {

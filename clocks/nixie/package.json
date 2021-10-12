@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "start": "esbuild --sourcemap --bundle --outfile=bundle.js --watch index.js",
-    "build": "esbuild --minify --sourcemap --bundle --outfile=bundle.js index.js"
+    "build": "esbuild --minify --sourcemap --bundle --outfile=bundle --entry-names='[dir]/[name]-[hash].js' index.js"
   },
   "dependencies": {
     "dat.gui": "^0.7.7",
