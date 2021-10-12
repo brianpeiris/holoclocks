@@ -4,6 +4,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 
+import { timeZoneOptions, getTimeParts } from "../../common";
+
 const queryParams = new URLSearchParams(location.search);
 
 (async () => {
@@ -12,18 +14,16 @@ const queryParams = new URLSearchParams(location.search);
   document.body.append(gui.domElement);
   gui.domElement.addEventListener("click", (e) => e.stopPropagation());
   const config = {
-    render2d: false,
+    timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
+    format: "h23",
     backColor: "#ffffff",
     textColor: "#000000",
     shadows: true,
     horizontal: true,
   };
   gui.remember(config);
-  gui
-    .add(config, "render2d")
-    .name("render 2d")
-    .setValue(false)
-    .onChange((val) => (renderer.render2d = val));
+  gui.add(config, "timeZone", timeZoneOptions).name("time zone");
+  gui.add(config, "format", {"24 hour": "h23", "12 hour": "h12"});
   gui
     .add(config, "horizontal")
     .onChange(layoutMeshes);
@@ -128,7 +128,7 @@ const queryParams = new URLSearchParams(location.search);
   // scene.add(new THREE.AxesHelper());
 
   const renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
-  renderer.render2d = queryParams.has("2d") || config.render2d;
+  renderer.render2d = queryParams.has("2d");
   renderer.renderQuilt = queryParams.has("quilt");
   renderer.webglRenderer.physicallyCorrectLights = true;
   renderer.webglRenderer.shadowMap.enabled = true;
@@ -141,7 +141,6 @@ const queryParams = new URLSearchParams(location.search);
   }
 
   function format(n) {
-    // return "00";
     return String(n).padStart(2, "0");
   }
   function getGeo(timeString) {
@@ -170,10 +169,10 @@ const queryParams = new URLSearchParams(location.search);
     }
   }
   renderer.webglRenderer.setAnimationLoop(() => {
-    const date = new Date();
-    updateMesh(hourMesh, format(date.getHours()));
-    updateMesh(minuteMesh, format(date.getMinutes()));
-    updateMesh(secondMesh, format(date.getSeconds()));
+    const [hours, minutes, seconds] = getTimeParts(config.timeZone, config.format);
+    updateMesh(hourMesh, format(hours));
+    updateMesh(minuteMesh, format(minutes));
+    updateMesh(secondMesh, format(seconds));
     renderer.render(scene, camera);
   });
 })();
