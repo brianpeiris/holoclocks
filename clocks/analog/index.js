@@ -4,23 +4,9 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 
-import { timeZoneOptions, getTimeParts } from "../../common";
+import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
 
 const queryParams = new URLSearchParams(location.search);
-
-function rand(min=0, max=1) {
-  return Math.random() * (max - min) + min;
-}
-
-const color = new THREE.Color();
-function randomizeColor() {
-  color.setHSL(
-    rand(),
-    rand(0.25, 1),
-    rand(0.25, 1),
-  );
-  return `#${color.getHexString()}`;
-}
 
 (async () => {
   const gui = new dat.GUI({ hideable: false });
@@ -36,12 +22,12 @@ function randomizeColor() {
     hourColor: "#000000",
     markerColor: "#000000",
     randomize: () => {
-      config.backgroundColor = randomizeColor();
-      config.backColor = randomizeColor();
-      config.secondColor = randomizeColor();
-      config.minuteColor = randomizeColor();
-      config.hourColor = randomizeColor();
-      config.markerColor = randomizeColor();
+      config.backgroundColor = randomColor();
+      config.backColor = randomColor();
+      config.secondColor = randomColor();
+      config.minuteColor = randomColor();
+      config.hourColor = randomColor();
+      config.markerColor = randomColor();
       updateColors();
       gui.updateDisplay();
     },
@@ -55,7 +41,7 @@ function randomizeColor() {
   gui.addColor(config, "minuteColor").name("minute hand color").onChange(updateColors);
   gui.addColor(config, "secondColor").name("second hand color").onChange(updateColors);
   gui.addColor(config, "markerColor").name("marker color").onChange(updateColors);
-  gui.add(config, "randomize").name("randomize");
+  gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
 
   function updateColors() {

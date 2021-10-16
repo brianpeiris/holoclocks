@@ -4,9 +4,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
-import Stats from "three/examples/jsm/libs/stats.module.js";
+import Stats from "three/examples/jsm/libs/stats.module";
 
-import { Spline3 } from "./spline3.js";
+import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
+import { Spline3 } from "./spline3";
 
 const queryParams = new URLSearchParams(location.search);
 
@@ -21,10 +22,18 @@ const queryParams = new URLSearchParams(location.search);
   document.body.append(gui.domElement);
   gui.domElement.addEventListener('click', e => e.stopPropagation());
   const config = {
-    render2d: false,
+    timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
+    format: "h23",
     backColor: "#ffffff",
     colorOne: "#000000",
     colorTwo: "#666666",
+    randomize: () => {
+      config.backColor = randomColor();
+      config.colorOne = randomColor();
+      config.colorTwo = randomColor();
+      updateColors();
+      gui.updateDisplay();
+    },
     shadows: true,
   };
   gui.remember(config);
@@ -33,11 +42,19 @@ const queryParams = new URLSearchParams(location.search);
       digit.setColor(num, color);
     }
   }
-  gui.add(config, "render2d").name("render 2d").setValue(false).onChange((val) => renderer.render2d = val);
-  gui.addColor(config, "backColor").name("background color").onChange((val) => back.material.color.setStyle(val));
-  gui.addColor(config, "colorOne").name("color one").onChange((val) => setDigitColors(1, val));
-  gui.addColor(config, "colorTwo").name("color two").onChange((val) => setDigitColors(0, val));
+  gui.add(config, "timeZone", timeZoneOptions).name("time zone");
+  gui.add(config, "format", {"24 hour": "h23", "12 hour": "h12"});
+  gui.addColor(config, "backColor").name("background color").onChange(updateColors);
+  gui.addColor(config, "colorOne").name("color one").onChange(updateColors);
+  gui.addColor(config, "colorTwo").name("color two").onChange(updateColors);
+  gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
+
+  function updateColors() {
+    back.material.color.setStyle(config.backColor);
+    setDigitColors(1, config.colorOne);
+    setDigitColors(0, config.colorTwo);
+  }
 
   const textureLoader = new THREE.TextureLoader();
 
@@ -59,9 +76,12 @@ const queryParams = new URLSearchParams(location.search);
     new THREE.BoxGeometry(3, 4, 0.1),
     new THREE.MeshStandardMaterial({ color: config.backColor })
   );
+  back.scale.setScalar(2);
   back.receiveShadow = true;
   back.position.z = -0.56;
   scene.add(back);
+
+  // scene.add(new THREE.AxesHelper());
 
   const backPos = -1.0;
   const frontPos = -0.1;
@@ -87,10 +107,14 @@ const queryParams = new URLSearchParams(location.search);
     new Spline3(svgs, config.colorOne, config.colorTwo),
     new Spline3(svgs, config.colorOne, config.colorTwo),
   ];
+  const ySpacing = 1.4;
+  const yOffset = 0.7;
+  const xSpacing = 0.6;
+  const xOffset = 0.45;
   for (let i = 0; i < digits.length; i++) {
     const digit = digits[i];
-    digit.position.x = (i % 2 === 0 ? -0.5 : 0.5) - 0.25;
-    digit.position.y = (Math.ceil(-i / 2) * 1.1 + 1.1) + 0.5;
+    digit.position.x = (i % 2 === 0 ? -xSpacing : xSpacing) - xOffset;
+    digit.position.y = (Math.ceil(-i / 2) * ySpacing + ySpacing) + yOffset;
     scene.add(digit);
   }
 
@@ -118,17 +142,14 @@ const queryParams = new URLSearchParams(location.search);
       }
     }
 
-    const date = new Date();
+    const [hours, minutes, seconds] = getTimeParts(config.timeZone, config.format, true);
 
-    const hours = String(date.getHours()).padStart(2, "0");
     digits[0].set(hours[0]);
     digits[1].set(hours[1]);
 
-    const minutes = String(date.getMinutes()).padStart(2, "0");
     digits[2].set(minutes[0]);
     digits[3].set(minutes[1]);
 
-    const seconds = String(date.getSeconds()).padStart(2, "0");
     digits[4].set(seconds[0]);
     digits[5].set(seconds[1]);
 

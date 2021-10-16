@@ -140,9 +140,6 @@ const queryParams = new URLSearchParams(location.search);
     new OrbitControls(camera, renderer.domElement);
   }
 
-  function format(n) {
-    return String(n).padStart(2, "0");
-  }
   function getGeo(timeString) {
     if (!geoCache.has(timeString)) {
       geoCache.set(
@@ -169,10 +166,10 @@ const queryParams = new URLSearchParams(location.search);
     }
   }
   renderer.webglRenderer.setAnimationLoop(() => {
-    const [hours, minutes, seconds] = getTimeParts(config.timeZone, config.format);
-    updateMesh(hourMesh, format(hours));
-    updateMesh(minuteMesh, format(minutes));
-    updateMesh(secondMesh, format(seconds));
+    const [hours, minutes, seconds] = getTimeParts(config.timeZone, config.format, true);
+    updateMesh(hourMesh, hours);
+    updateMesh(minuteMesh, minutes);
+    updateMesh(secondMesh, seconds);
     renderer.render(scene, camera);
   });
 })();

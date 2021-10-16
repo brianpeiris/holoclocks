@@ -26,6 +26,7 @@ export class Spline3 extends THREE.Object3D {
     this.val = 0;
     this.curvePoints = [];
     this.tangents = [];
+    this.scale.setScalar(1.5);
 
     const n = 128;
 
@@ -104,7 +105,7 @@ export class Spline3 extends THREE.Object3D {
 
         randomUnitVector(vector);
         quaternion.setFromUnitVectors(forward, vector);
-        particle.quaternion.slerp(quaternion, 0.1);
+        particle.quaternion.slerp(quaternion, 0.05);
 
         particle.updateMatrix();
 
