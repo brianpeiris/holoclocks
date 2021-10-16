@@ -4,7 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 
-import { timeZoneOptions, getTimeParts } from "../../common";
+import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
 
 const queryParams = new URLSearchParams(location.search);
 
@@ -16,26 +16,30 @@ const queryParams = new URLSearchParams(location.search);
   const config = {
     timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     format: "h23",
+    horizontal: true,
     backColor: "#ffffff",
     textColor: "#000000",
+    randomize: () => {
+      config.backColor = randomColor();
+      config.textColor = randomColor();
+      updateColors();
+      gui.updateDisplay();
+    },
     shadows: true,
-    horizontal: true,
   };
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
-  gui.add(config, "format", {"24 hour": "h23", "12 hour": "h12"});
-  gui
-    .add(config, "horizontal")
-    .onChange(layoutMeshes);
-  gui
-    .addColor(config, "backColor")
-    .name("background color")
-    .onChange((val) => back.material.color.setStyle(val));
-  gui
-    .addColor(config, "textColor")
-    .name("text color")
-    .onChange((val) => timeMat.color.setStyle(val));
+  gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
+  gui.add(config, "horizontal").onChange(layoutMeshes);
+  gui.addColor(config, "backColor").name("background color").onChange(updateColors);
+  gui.addColor(config, "textColor").name("text color").onChange(updateColors);
+  gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => (directionalLight.castShadow = val));
+
+  function updateColors() {
+    back.material.color.setStyle(config.backColor);
+    timeMat.color.setStyle(config.textColor);
+  }
 
   const textureLoader = new THREE.TextureLoader();
 
@@ -69,21 +73,15 @@ const queryParams = new URLSearchParams(location.search);
 
   const geoCache = new Map();
 
-  const timeMat = new THREE.MeshStandardMaterial({ color: config.textColor, wireframe: false })
+  const timeMat = new THREE.MeshStandardMaterial({ color: config.textColor, wireframe: false });
   function makeComponentMesh() {
-    const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(),
-      timeMat
-    );
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(), timeMat);
     mesh.castShadow = true;
     mesh.scale.setScalar(0.42);
     return mesh;
   }
   function makeSeparatorMesh() {
-    const mesh = new THREE.Mesh(
-      getGeo(":"),
-      timeMat
-    );
+    const mesh = new THREE.Mesh(getGeo(":"), timeMat);
     mesh.castShadow = true;
     mesh.scale.setScalar(0.42);
     return mesh;
@@ -122,7 +120,7 @@ const queryParams = new URLSearchParams(location.search);
       secondMesh.position.y = -0.7;
     }
   }
-  console.log(config.horizontal)
+  console.log(config.horizontal);
   layoutMeshes();
 
   // scene.add(new THREE.AxesHelper());
