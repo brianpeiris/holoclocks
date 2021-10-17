@@ -78,7 +78,7 @@ const queryParams = new URLSearchParams(location.search);
   );
   back.scale.setScalar(2);
   back.receiveShadow = true;
-  back.position.z = -0.56;
+  back.position.z = -0.8;
   scene.add(back);
 
   // scene.add(new THREE.AxesHelper());
@@ -108,13 +108,14 @@ const queryParams = new URLSearchParams(location.search);
     new Spline3(svgs, config.colorOne, config.colorTwo),
   ];
   const ySpacing = 1.4;
-  const yOffset = 0.7;
+  const yOffset = 0.65;
   const xSpacing = 0.6;
   const xOffset = 0.45;
   for (let i = 0; i < digits.length; i++) {
     const digit = digits[i];
     digit.position.x = (i % 2 === 0 ? -xSpacing : xSpacing) - xOffset;
     digit.position.y = (Math.ceil(-i / 2) * ySpacing + ySpacing) + yOffset;
+    digit.position.z = 0.1;
     scene.add(digit);
   }
 

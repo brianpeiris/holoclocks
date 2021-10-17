@@ -27,6 +27,7 @@ export class Spline3 extends THREE.Object3D {
     this.curvePoints = [];
     this.tangents = [];
     this.scale.setScalar(1.5);
+    this.velocity = 0.5;
 
     const n = 128;
 
@@ -43,7 +44,7 @@ export class Spline3 extends THREE.Object3D {
     const particleGeo = new THREE.SphereGeometry(0.03, 6, 6);
     this.particlesMesh = new THREE.InstancedMesh(
       particleGeo,
-      new THREE.MeshStandardMaterial({ depthTest: false, roughness: 0.3, metalness: 0.4, color: "white" }),
+      new THREE.MeshStandardMaterial({ depthTest: false, roughness: 0.4, metalness: 0.2, color: "white" }),
       n * pointMult
     );
     this.particlesMesh.castShadow = true;
@@ -54,7 +55,7 @@ export class Spline3 extends THREE.Object3D {
     for (let i = 0; i < n * pointMult; i++) {
       const particle = new THREE.Object3D(0.1);
       particle.matrixAutoUpdate = false;
-      particle.userData.velocity = 0.4;
+      particle.userData.velocity = this.velocity;
       const currentIndex = Math.floor(i / pointMult);
       particle.position.copy(this.curvePoints[this.val][currentIndex]);
       particle.quaternion.setFromUnitVectors(forward, this.tangents[this.val][currentIndex]);
@@ -85,8 +86,8 @@ export class Spline3 extends THREE.Object3D {
     return (delta) => {
       for (let i = 0; i < this.particles.length; i++) {
         const particle = this.particles[i];
-        particle.userData.velocity += rand(-1, 1) * 0.02;
-        particle.userData.velocity = clamp(particle.userData.velocity, 0.1, 0.4);
+        particle.userData.velocity += rand(-1, 1) * (this.velocity / 20);
+        particle.userData.velocity = clamp(particle.userData.velocity, 0.1, this.velocity);
         particle.translateZ(particle.userData.velocity * 0.06);
 
         const currDist = this.curvePoints[this.val][particle.userData.currentIndex].distanceToSquared(particle.position);
@@ -101,11 +102,11 @@ export class Spline3 extends THREE.Object3D {
         particle.quaternion.slerp(quaternion, 0.5);
 
         quaternion.setFromUnitVectors(forward, nextTangent);
-        particle.quaternion.slerp(quaternion, 0.15);
+        particle.quaternion.slerp(quaternion, 0.05);
 
         randomUnitVector(vector);
         quaternion.setFromUnitVectors(forward, vector);
-        particle.quaternion.slerp(quaternion, 0.05);
+        particle.quaternion.slerp(quaternion, 0.02);
 
         particle.updateMatrix();
 
