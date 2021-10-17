@@ -33,11 +33,11 @@ function rand(min=0, max=1) {
 
 export const randomColor = (() => {
   const color = new THREE.Color();
-  return () => {
+  return (saturation, lightness) => {
     color.setHSL(
       rand(),
-      rand(0.25, 1),
-      rand(0.25, 1),
+      saturation || rand(0.25, 1),
+      lightness || rand(0.25, 1),
     );
     return `#${color.getHexString()}`;
   };

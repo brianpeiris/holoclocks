@@ -6,6 +6,7 @@ import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 import rStats from "rstatsjs/src/rStats.js";
 
+import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
 import { Tube } from "./tube";
 
 const queryParams = new URLSearchParams(location.search);
@@ -18,21 +19,36 @@ const queryParams = new URLSearchParams(location.search);
   document.body.append(gui.domElement);
   gui.domElement.addEventListener('click', e => e.stopPropagation());
   const config = {
-    render2d: false,
+    timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
+    format: "h23",
     backColor: "#222222",
     nixieColor: "#ff0000",
+    baseColor: "#000000",
+    randomize: () => {
+      config.backColor = randomColor();
+      config.nixieColor = randomColor(1, 0.5);
+      config.baseColor = randomColor();
+      updateColors();
+      gui.updateDisplay();
+    },
     shadows: true,
   };
   gui.remember(config);
-  function changeTubeColors(val) {
+  gui.add(config, "timeZone", timeZoneOptions).name("time zone");
+  gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
+  gui.addColor(config, "backColor").name("background color").onChange(updateColors);
+  gui.addColor(config, "nixieColor").name("nixie color").onChange(updateColors);
+  gui.addColor(config, "baseColor").name("base color").onChange(updateColors);
+  gui.add(config, "randomize");
+  gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
+
+  function updateColors() {
+    back.material.color.setStyle(config.backColor);
+    holderMat.color.setStyle(config.baseColor);
     for (const tube of tubes) {
-      tube.setColor(val);
+      tube.setColor(config.nixieColor);
     }
   }
-  gui.add(config, "render2d").name("render 2d").setValue(false).onChange((val) => renderer.render2d = val);
-  gui.addColor(config, "backColor").name("background color").onChange((val) => back.material.color.setStyle(val));
-  gui.addColor(config, "nixieColor").name("nixie color").onChange(changeTubeColors);
-  gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
 
   const textureLoader = new THREE.TextureLoader();
 
@@ -54,36 +70,41 @@ const queryParams = new URLSearchParams(location.search);
     new THREE.BoxGeometry(3, 4, 0.1),
     new THREE.MeshStandardMaterial({ color: config.backColor, roughness: 1, metalness: 0 })
   );
+  back.scale.setScalar(2);
   back.receiveShadow = true;
   back.position.z = -0.5;
   scene.add(back);
 
   const model = await new Promise((resolve) => new GLTFLoader().load("nixie.glb", (gltf) => resolve(gltf.scene)));
+  
+  const holderMat = new THREE.MeshStandardMaterial({
+    color: 'black',
+    roughness: 0.8,
+    metalness: 0.3,
+  });
 
   const tubes = [];
   window.tubes = tubes;
   for (let i = 0; i < 6; i++) {
     const tube = new Tube(model);
-    tube.position.x = (i % 2) * 0.8 - 0.4;
-    tube.position.y = Math.floor(i / 2) *  1.2 - 1.1;
+    tube.scale.setScalar(1.8);
+    tube.position.x = (i % 2) * 1.1 - 0.55;
+    tube.position.y = Math.floor(i / 2) * 1.35 - 1.3;
+    tube.position.z = 0.2;
     if (i % 2 === 0) {
       const holder = new THREE.Mesh(
-        new THREE.BoxGeometry(2, 0.2, 1),
-        new THREE.MeshStandardMaterial({
-          color: 'black',
-          roughness: 0.8,
-          metalness: 0.8,
-        }),
+        new THREE.BoxGeometry(2, 0.1, 1),
+        holderMat
       );
       holder.receiveShadow = true;
       holder.castShadow = true;
-      holder.position.y = Math.floor(i / 2) * 1.2 - 1.6;
+      holder.position.y = Math.floor(i / 2) * 1.35 - 1.9;
       scene.add(holder);
     }
     tubes.push(tube);
     scene.add(tube);
   }
-  changeTubeColors(config.nixieColor);
+  updateColors();
 
   const renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
   window.renderer = renderer;
@@ -109,14 +130,11 @@ const queryParams = new URLSearchParams(location.search);
   }
 
   renderer.webglRenderer.setAnimationLoop(() => {
-    const date = new Date();
-    const hours = String(date.getHours()).padStart(2, "0");
+    const [hours, minutes, seconds] = getTimeParts(config.timeZone, config.format, true);
     tubes[4].set(hours[0]);
     tubes[5].set(hours[1]);
-    const minutes = String(date.getMinutes()).padStart(2, "0");
     tubes[2].set(minutes[0]);
     tubes[3].set(minutes[1]);
-    const seconds = String(date.getSeconds()).padStart(2, "0");
     tubes[0].set(seconds[0]);
     tubes[1].set(seconds[1]);
 

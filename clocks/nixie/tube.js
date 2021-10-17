@@ -2,11 +2,13 @@ import * as THREE from "three";
 import { RectAreaLightHelper } from "three/examples/jsm/helpers/RectAreaLightHelper";
 
 const unlit = new THREE.MeshStandardMaterial({
-  color: "black",
+  color: "lightgrey",
   roughness: 1,
   metalness: 0,
   emissiveIntensity: 10,
   envMapIntensity: 0,
+  transparent: true,
+  opacity: 0.2,
 });
 
 const lit = new THREE.MeshStandardMaterial({
@@ -29,8 +31,8 @@ export class Tube extends THREE.Object3D {
     const _model = model.clone();
     window.model = _model;
     const glass = _model.getObjectByName("tube");
-    glass.material.roughness = 0.1;
-    glass.material.metalness = 0.2;
+    glass.material.roughness = 0.02;
+    glass.material.metalness = 0.5;
     glass.material.thickness = 0.08;
     glass.material.ior = 3;
 
