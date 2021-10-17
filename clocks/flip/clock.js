@@ -1,15 +1,18 @@
 import * as THREE from "three";
 
+import { getTimeParts } from "../../common";
 import { Digit } from "./digit";
 
 export class Clock extends THREE.Object3D {
   constructor(noiseImageData, brushedImageData) {
     super();
+    // this.add(new THREE.AxesHelper());
     this.digits = [];
     let i = 6;
     while (i--) {
       const digit = new Digit(noiseImageData, brushedImageData);
-      digit.position.x = -1.4 * i + Math.floor(i / 2) * -0.15 + 1.4 * 2.5 + 0.15;
+      digit.position.x = -(i % 2) * 1.5 + 0.75;
+      digit.position.y = Math.floor(i / 2) * 1.75 - 1.7;
       this.digits.push(digit);
       this.add(digit);
     }
@@ -29,11 +32,8 @@ export class Clock extends THREE.Object3D {
       digit.setBarColor(color);
     }
   }
-  update() {
-    const date = new Date();
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
+  update(timeZone, format) {
+    const [hours, minutes, seconds] = getTimeParts(timeZone, format, true);
     const nums = hours + minutes + seconds;
     let i = 6;
     while (i--) {

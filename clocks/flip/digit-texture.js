@@ -14,8 +14,8 @@ function drawDigit(ctx, digit, back, front) {
   ctx.fillStyle = front;
   ctx.textBaseline = "top";
   ctx.textAlign = "center";
-  ctx.font = `${height}px consolas`;
-  ctx.fillText(digit, width / 2, 0);
+  ctx.font = `${height * 0.9}px 'AzeretMono'`;
+  ctx.fillText(digit, width / 2, 25);
 }
 
 const cache = new Map();
@@ -36,7 +36,7 @@ function getCanvases(noiseImageData, brushedImageData, backColor, foreColor, dig
     normalCtx.drawImage(digitNormalCanvas, 0, 0);
 
     const [ormCanvas, ormCtx] = makeCanvas();
-    drawDigit(ormCtx, digit, "#003322", "#004488");
+    drawDigit(ormCtx, digit, "#004422", "#004488");
 
     const [mapCanvas, mapCtx] = makeCanvas();
     drawDigit(mapCtx, digit, backColor, foreColor);

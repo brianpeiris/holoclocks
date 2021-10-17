@@ -58,7 +58,7 @@ export class Digit extends THREE.Object3D {
     this.add(this.rotatingPrev);
 
     this.bar = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.04, 0.04, 1.6),
+      new THREE.CylinderGeometry(0.03, 0.03, 1.5),
       new THREE.MeshStandardMaterial({
         roughness: 0.2,
         metalness: 0.8,
@@ -99,8 +99,8 @@ export class Digit extends THREE.Object3D {
     addDigitTextures(this.noiseImageData, this.brushedImageData, this.backColor, this.foreColor, this.rotatingNext, n, true);
     this.setCurrent();
     this.current = n;
-    gsap.fromTo(this.rotatingNext.rotation, { x: 0 }, { x: Math.PI, duration: 0.5, ease: "expo.in" });
-    gsap.fromTo(this.rotatingNext.position, { z: -0.02 }, { z: 0.02, duration: 0.5, ease: "expo.in" });
-    gsap.fromTo(this.rotatingPrev.rotation, { x: 0 }, { x: Math.PI, duration: 0.5, ease: "expo.in" });
+    gsap.fromTo(this.rotatingNext.rotation, { x: 0 }, { x: Math.PI, duration: 0.85, ease: "quart.in" });
+    gsap.fromTo(this.rotatingNext.position, { z: -0.02 }, { z: 0.02, duration: 0.85, ease: "quart.in" });
+    gsap.fromTo(this.rotatingPrev.rotation, { x: 0 }, { x: Math.PI, duration: 0.85, ease: "quart.in" });
   }
 }

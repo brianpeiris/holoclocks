@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 
+import { timeZoneOptions, randomColor } from "../../common";
 import { Clock } from "./clock";
 
 const queryParams = new URLSearchParams(location.search);
@@ -14,25 +15,45 @@ const queryParams = new URLSearchParams(location.search);
   document.body.append(gui.domElement);
   gui.domElement.addEventListener('click', e => e.stopPropagation());
   const config = {
-    render2d: false,
+    timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
+    format: "h23",
     backColor: "#ffffff",
     digitBackColor: "#000000",
     digitForeColor: "#ffffff",
     barColor: "#ffffff",
+    randomize: () => {
+      config.backColor = randomColor();
+      config.digitBackColor = randomColor();
+      config.digitForeColor = randomColor();
+      config.barColor = randomColor();
+      updateColors();
+      gui.updateDisplay();
+    },
     shadows: true,
   };
   gui.remember(config);
-  gui.add(config, "render2d").name("render 2d").setValue(false).onChange((val) => renderer.render2d = val);
-  gui.addColor(config, "backColor").name("background color").onChange((val) => back.material.color.setStyle(val));
-  gui.addColor(config, "digitBackColor").name("digit back color").onChange((val) => clock.setDigitBackColor(val));
-  gui.addColor(config, "digitForeColor").name("digit color").onChange((val) => clock.setDigitForeColor(val));
-  gui.addColor(config, "barColor").name("bar color").onChange((val) => clock.setBarColor(val));
+  gui.add(config, "timeZone", timeZoneOptions).name("time zone");
+  gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
+  gui.addColor(config, "backColor").name("background color").onChange(updateColors);
+  gui.addColor(config, "digitBackColor").name("digit back color").onChange(updateColors);
+  gui.addColor(config, "digitForeColor").name("digit color").onChange(updateColors);
+  gui.addColor(config, "barColor").name("bar color").onChange(updateColors);
+  gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
+
+  function updateColors() {
+    back.material.color.setStyle(config.backColor);
+    clock.setDigitBackColor(config.digitBackColor);
+    clock.setDigitForeColor(config.digitForeColor);
+    clock.setBarColor(config.barColor);
+  }
 
   const textureLoader = new THREE.TextureLoader();
 
   const noiseImageData = await createImageBitmap(await fetch("noise-normal.png").then((r) => r.blob()));
   const brushedImageData = await createImageBitmap(await fetch("brushed-normal.png").then((r) => r.blob()));
+
+  await document.fonts.load("16px 'AzeretMono'");
 
   const scene = new THREE.Scene();
 
@@ -52,17 +73,13 @@ const queryParams = new URLSearchParams(location.search);
     new THREE.BoxGeometry(3, 4, 0.1),
     new THREE.MeshStandardMaterial({ color: config.backColor, roughness: 1, metalness: 0 })
   );
+  back.scale.setScalar(2);
   back.receiveShadow = true;
-  if (!queryParams.has("forward")) {
-    back.position.z = -1;
-  }
+  back.position.z = -1;
   scene.add(back);
 
   const clock = new Clock(noiseImageData, brushedImageData);
-  clock.scale.setScalar(0.3);
-  if (queryParams.has("forward")) {
-    clock.position.z = 0.7;
-  } 
+  clock.scale.setScalar(0.8);
   clock.setDigitBackColor(config.digitBackColor);
   clock.setDigitForeColor(config.digitForeColor);
   clock.setBarColor(config.barColor);
@@ -83,7 +100,7 @@ const queryParams = new URLSearchParams(location.search);
   }
 
   renderer.webglRenderer.setAnimationLoop(() => {
-    clock.update();
+    clock.update(config.timeZone, config.format);
     renderer.render(scene, camera);
   });
 })();
