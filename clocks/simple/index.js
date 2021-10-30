@@ -16,6 +16,7 @@ const queryParams = new URLSearchParams(location.search);
   const config = {
     timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     format: "h23",
+    showSeconds: true,
     horizontal: true,
     backColor: "#ffffff",
     textColor: "#000000",
@@ -30,6 +31,7 @@ const queryParams = new URLSearchParams(location.search);
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
   gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
+  gui.add(config, "showSeconds").onChange(layoutMeshes);
   gui.add(config, "horizontal").onChange(layoutMeshes);
   gui.addColor(config, "backColor").name("background color").onChange(updateColors);
   gui.addColor(config, "textColor").name("text color").onChange(updateColors);
@@ -103,19 +105,34 @@ const queryParams = new URLSearchParams(location.search);
     hourMesh.position.setScalar(0);
     minuteMesh.position.setScalar(0);
     secondMesh.position.setScalar(0);
+    secondMesh.visible = true;
+    sepTwo.visible = true;
     if (config.horizontal) {
       sepOne.visible = sepTwo.visible = true;
       sepOne.position.set(-0.29, 0.07, 0);
-      sepTwo.position.set(0.76, 0.07, 0);
-      timeGroup.position.set(-0.48, -0.25, 0.1);
-      timeGroup.scale.setScalar(1);
+      if (!config.showSeconds) {
+        secondMesh.visible = false;
+        sepTwo.visible = false;
+        timeGroup.position.set(0.06, -0.4, 0.1);
+        timeGroup.scale.setScalar(1.4);
+      } else {
+        sepTwo.position.set(0.76, 0.07, 0);
+        timeGroup.position.set(-0.48, -0.25, 0.1);
+        timeGroup.scale.setScalar(1);
+      }
       const offset = 1.08;
       hourMesh.position.x = -offset;
       secondMesh.position.x = offset;
     } else {
       sepOne.visible = sepTwo.visible = false;
-      timeGroup.position.set(-0.85, -0.4, 0.1);
-      timeGroup.scale.setScalar(1.8);
+      if (!config.showSeconds) {
+        secondMesh.visible = false;
+        timeGroup.position.set(-1.3, -1.65, 0.1);
+        timeGroup.scale.setScalar(2.7);
+      } else {
+        timeGroup.position.set(-0.85, -0.4, 0.1);
+        timeGroup.scale.setScalar(1.8);
+      }
       hourMesh.position.y = 0.7;
       secondMesh.position.y = -0.7;
     }
