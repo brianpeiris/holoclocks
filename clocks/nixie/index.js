@@ -6,7 +6,7 @@ import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 import rStats from "rstatsjs/src/rStats.js";
 
-import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
+import { timeZoneOptions, getTimeParts, randomColor, setupPermalink, loadFromURLParams } from "../../common";
 import { Tube } from "./tube";
 
 const queryParams = new URLSearchParams(location.search);
@@ -33,6 +33,7 @@ const queryParams = new URLSearchParams(location.search);
       gui.updateDisplay();
     },
     shadows: true,
+    permalink: () => {}
   };
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
@@ -43,6 +44,8 @@ const queryParams = new URLSearchParams(location.search);
   gui.addColor(config, "baseColor").name("base color").onChange(updateColors);
   gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
+  setupPermalink(config, gui.add(config, "permalink"));
+  loadFromURLParams(gui, config);
 
   function updateColors() {
     back.material.color.setStyle(config.backColor);

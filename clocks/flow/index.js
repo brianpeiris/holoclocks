@@ -6,7 +6,7 @@ import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 import Stats from "three/examples/jsm/libs/stats.module";
 
-import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
+import { timeZoneOptions, getTimeParts, randomColor, setupPermalink, loadFromURLParams } from "../../common";
 import { Spline3 } from "./spline3";
 
 const queryParams = new URLSearchParams(location.search);
@@ -36,6 +36,7 @@ const queryParams = new URLSearchParams(location.search);
       gui.updateDisplay();
     },
     shadows: true,
+    permalink: () => {}
   };
   gui.remember(config);
   function setDigitColors(num, color) {
@@ -51,6 +52,8 @@ const queryParams = new URLSearchParams(location.search);
   gui.addColor(config, "colorTwo").name("color two").onChange(updateColors);
   gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
+  setupPermalink(config, gui.add(config, "permalink"));
+  loadFromURLParams(gui, config);
 
   function updateColors() {
     back.material.color.setStyle(config.backColor);

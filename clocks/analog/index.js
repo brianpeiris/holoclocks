@@ -4,7 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 
-import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
+import { timeZoneOptions, getTimeParts, randomColor, setupPermalink, loadFromURLParams } from "../../common";
 
 const queryParams = new URLSearchParams(location.search);
 
@@ -33,6 +33,7 @@ const queryParams = new URLSearchParams(location.search);
       gui.updateDisplay();
     },
     shadows: true,
+    permalink: () => {}
   };
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
@@ -45,6 +46,8 @@ const queryParams = new URLSearchParams(location.search);
   gui.addColor(config, "markerColor").name("marker color").onChange(updateColors);
   gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => directionalLight.castShadow = val);
+  setupPermalink(config, gui.add(config, "permalink"));
+  loadFromURLParams(gui, config);
 
   function updateColors() {
     background.material.color.setStyle(config.backgroundColor);

@@ -4,12 +4,13 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Renderer, Camera } from "holoplay";
 import * as dat from "dat.gui";
 
-import { timeZoneOptions, getTimeParts, randomColor } from "../../common";
+import { timeZoneOptions, getTimeParts, randomColor, setupPermalink, loadFromURLParams } from "../../common";
 
 const queryParams = new URLSearchParams(location.search);
 
 (async () => {
   const gui = new dat.GUI({ hideable: false });
+  window.gui = gui;
   gui.useLocalStorage = true;
   document.body.append(gui.domElement);
   gui.domElement.addEventListener("click", (e) => e.stopPropagation());
@@ -27,8 +28,11 @@ const queryParams = new URLSearchParams(location.search);
       gui.updateDisplay();
     },
     shadows: true,
+    permalink: () => {}
   };
-  gui.remember(config);
+  if (location.search === '') {
+    gui.remember(config);
+  }
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
   gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
   gui.add(config, "showSeconds").onChange(layoutMeshes);
@@ -37,6 +41,8 @@ const queryParams = new URLSearchParams(location.search);
   gui.addColor(config, "textColor").name("text color").onChange(updateColors);
   gui.add(config, "randomize");
   gui.add(config, "shadows").onChange((val) => (directionalLight.castShadow = val));
+  setupPermalink(config, gui.add(config, "permalink"));
+  loadFromURLParams(gui, config);
 
   function updateColors() {
     back.material.color.setStyle(config.backColor);
