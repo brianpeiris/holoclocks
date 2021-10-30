@@ -5,14 +5,12 @@
 ## Development
 
 ```bash
-# Install dependencies and run the web server
+# Install main dependencies 
 $ npm ci
-$ npm start
 
-# In a separate terminal, cd into a clock directory
-$ cd clocks/simple
+# Install dependencies for the "simple" clock
+$ npm run setup simple
 
-# Install dependencies and start the esbuild watcher
-$ npm ci
-$ npm start
+# Start working on the "simple" clock
+$ npm start simple
 ```

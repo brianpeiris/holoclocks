@@ -1,13 +1,15 @@
 {
   "private": true,
   "scripts": {
-    "start": "eleventy --serve",
-    "build": "npm run build:js; npm run build:html",
+    "setup": "node scripts/setup.js",
+    "start": "node scripts/start.js",
+    "build": "rimraf 'clocks/**/bundle-dev.*'; npm run build:js; npm run build:html",
     "build:html": "eleventy",
     "build:js": "bash build-clocks.sh"
   },
   "dependencies": {
     "@11ty/eleventy": "^1.0.0-canary.41",
+    "concurrently": "^6.3.0",
     "countries-and-timezones": "^3.2.3",
     "esbuild": "^0.12.24",
     "rimraf": "^3.0.2"
