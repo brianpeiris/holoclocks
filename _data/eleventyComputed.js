@@ -15,8 +15,12 @@ module.exports = {
     }
   },
   layout: (data) => {
-    if (data.page.inputPath.includes("clocks")) return "clock.mustache";
-    else return null;
+    if (data.page.inputPath.includes("clocks")) {
+      return "clock.mustache";
+    }
+    else {
+      return null;
+    }
   },
   title: (data) => basename(dirname(data.page.inputPath)),
 };
