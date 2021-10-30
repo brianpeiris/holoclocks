@@ -16,7 +16,7 @@ const lit = new THREE.MeshStandardMaterial({
   emissive: "red",
   roughness: 1,
   metalness: 0,
-  emissiveIntensity: 10,
+  emissiveIntensity: 1,
   envMapIntensity: 0,
 });
 
