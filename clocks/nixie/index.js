@@ -21,6 +21,7 @@ const queryParams = new URLSearchParams(location.search);
   const config = {
     timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     format: "h23",
+    showSeconds: true,
     backColor: "#222222",
     nixieColor: "#ff0000",
     baseColor: "#000000",
@@ -36,6 +37,7 @@ const queryParams = new URLSearchParams(location.search);
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
   gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
+  gui.add(config, "showSeconds").onChange(updateLayout);
   gui.addColor(config, "backColor").name("background color").onChange(updateColors);
   gui.addColor(config, "nixieColor").name("nixie color").onChange(updateColors);
   gui.addColor(config, "baseColor").name("base color").onChange(updateColors);
@@ -47,6 +49,29 @@ const queryParams = new URLSearchParams(location.search);
     holderMat.color.setStyle(config.baseColor);
     for (const tube of tubes) {
       tube.setColor(config.nixieColor);
+    }
+  }
+
+  function updateLayout() {
+    tubes[0].visible = config.showSeconds;
+    tubes[1].visible = config.showSeconds;
+    holders[0].visible = config.showSeconds;
+    const scale = config.showSeconds ? 1 : 1.3;
+    const yOffset =  config.showSeconds ? 1.93 : 3.7;
+    const ySpacing =  config.showSeconds ? 1.35 : 2;
+    const xOffset =  config.showSeconds ? 0.55 : 0.5;
+    const xSpacing =  config.showSeconds ? 1.1 : 1.0;
+    for (let i = 0; i < 6; i++) {
+      const tube = tubes[i];
+      tube.scale.setScalar(1.7);
+      tube.position.x = (i % 2) * xSpacing - xOffset;
+      tube.position.y = 0.55;
+      tube.position.z = 0.2;
+      if (i % 2 === 0) {
+        const holder = holders[Math.floor(i / 2)];
+        holder.scale.setScalar(scale);
+        holder.position.y = Math.floor(i / 2) * ySpacing - yOffset;
+      }
     }
   }
 
@@ -75,6 +100,8 @@ const queryParams = new URLSearchParams(location.search);
   back.position.z = -0.5;
   scene.add(back);
 
+  // scene.add(new THREE.AxesHelper());
+
   const model = await new Promise((resolve) => new GLTFLoader().load("nixie.glb", (gltf) => resolve(gltf.scene)));
   
   const holderMat = new THREE.MeshStandardMaterial({
@@ -84,13 +111,9 @@ const queryParams = new URLSearchParams(location.search);
   });
 
   const tubes = [];
-  window.tubes = tubes;
+  const holders = [];
   for (let i = 0; i < 6; i++) {
     const tube = new Tube(model);
-    tube.scale.setScalar(1.8);
-    tube.position.x = (i % 2) * 1.1 - 0.55;
-    tube.position.y = Math.floor(i / 2) * 1.35 - 1.3;
-    tube.position.z = 0.2;
     if (i % 2 === 0) {
       const holder = new THREE.Mesh(
         new THREE.BoxGeometry(2, 0.1, 1),
@@ -98,13 +121,15 @@ const queryParams = new URLSearchParams(location.search);
       );
       holder.receiveShadow = true;
       holder.castShadow = true;
-      holder.position.y = Math.floor(i / 2) * 1.35 - 1.9;
+      holders.push(holder);
       scene.add(holder);
     }
+    const holder = holders[Math.floor(i / 2)];
     tubes.push(tube);
-    scene.add(tube);
+    holder.add(tube);
   }
   updateColors();
+  updateLayout();
 
   const renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
   window.renderer = renderer;
