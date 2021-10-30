@@ -36,7 +36,7 @@ const queryParams = new URLSearchParams(location.search);
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
   gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
-  gui.add(config, "showSeconds").onChange(() => clock.updateLayout(config.showSeconds));
+  gui.add(config, "showSeconds").name("show seconds").onChange(() => clock.updateLayout(config.showSeconds));
   gui.addColor(config, "backColor").name("background color").onChange(updateColors);
   gui.addColor(config, "digitBackColor").name("digit back color").onChange(updateColors);
   gui.addColor(config, "digitForeColor").name("digit color").onChange(updateColors);

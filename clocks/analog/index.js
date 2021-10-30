@@ -37,7 +37,7 @@ const queryParams = new URLSearchParams(location.search);
   };
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
-  gui.add(config, "showSeconds").onChange(() => secondHand.visible = config.showSeconds);
+  gui.add(config, "showSeconds").name("show seconds").onChange(() => secondHand.visible = config.showSeconds);
   gui.addColor(config, "backgroundColor").name("background color").onChange(updateColors);
   gui.addColor(config, "backColor").name("backing color").onChange(updateColors);
   gui.addColor(config, "hourColor").name("hour hand color").onChange(updateColors);
