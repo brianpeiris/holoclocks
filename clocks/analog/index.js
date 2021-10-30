@@ -15,6 +15,7 @@ const queryParams = new URLSearchParams(location.search);
   gui.domElement.addEventListener('click', e => e.stopPropagation());
   const config = {
     timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
+    showSeconds: true,
     backgroundColor: "#000000",
     backColor: "#ffffff",
     secondColor: "#ffffff",
@@ -35,6 +36,7 @@ const queryParams = new URLSearchParams(location.search);
   };
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
+  gui.add(config, "showSeconds").onChange(() => secondHand.visible = config.showSeconds);
   gui.addColor(config, "backgroundColor").name("background color").onChange(updateColors);
   gui.addColor(config, "backColor").name("backing color").onChange(updateColors);
   gui.addColor(config, "hourColor").name("hour hand color").onChange(updateColors);
@@ -97,6 +99,7 @@ const queryParams = new URLSearchParams(location.search);
   secondHandMesh.position.z = 0.2;
   secondHand.add(secondHandMesh);
   group.add(secondHand);
+  secondHand.visible = config.showSeconds;
 
   const minuteHand = new THREE.Object3D();
   const minuteHandMesh = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.1), new THREE.MeshStandardMaterial({roughness: 0.5, metalness: 0.2, color: config.minuteColor}));
