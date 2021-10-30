@@ -8,15 +8,6 @@ function clamp(v, a, b) {
   return Math.min(Math.max(v, a), b);
 }
 
-function randomUnitVector(vec) {
-  const u = (Math.random() - 0.5) * 2;
-  const t = Math.random() * Math.PI * 2;
-  const f = Math.sqrt(1 - u ** 2);
-  vec.x = f * Math.cos(t);
-  vec.y = f * Math.sin(t);
-  vec.z = u;
-}
-
 const forward = new THREE.Vector3(0, 0, 1);
 
 export class Spline3 extends THREE.Object3D {
@@ -26,7 +17,6 @@ export class Spline3 extends THREE.Object3D {
     this.val = 0;
     this.curvePoints = [];
     this.tangents = [];
-    this.scale.setScalar(1.5);
     this.velocity = 0.5;
 
     const n = 128;
@@ -83,12 +73,12 @@ export class Spline3 extends THREE.Object3D {
   update = (() => {
     const quaternion = new THREE.Quaternion();
     const vector = new THREE.Vector3();
-    return (delta) => {
+    return () => {
       for (let i = 0; i < this.particles.length; i++) {
         const particle = this.particles[i];
-        particle.userData.velocity += rand(-1, 1) * (this.velocity / 20);
+        particle.userData.velocity += rand(-1, 1) * (this.velocity / 40);
         particle.userData.velocity = clamp(particle.userData.velocity, 0.1, this.velocity);
-        particle.translateZ(particle.userData.velocity * 0.06);
+        particle.translateZ(particle.userData.velocity * 0.0625);
 
         const currDist = this.curvePoints[this.val][particle.userData.currentIndex].distanceToSquared(particle.position);
         const nextIndex = (particle.userData.currentIndex + 1) % this.curvePoints[this.val].length;
@@ -103,10 +93,6 @@ export class Spline3 extends THREE.Object3D {
 
         quaternion.setFromUnitVectors(forward, nextTangent);
         particle.quaternion.slerp(quaternion, 0.05);
-
-        randomUnitVector(vector);
-        quaternion.setFromUnitVectors(forward, vector);
-        particle.quaternion.slerp(quaternion, 0.02);
 
         particle.updateMatrix();
 

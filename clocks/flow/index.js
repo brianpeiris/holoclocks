@@ -24,6 +24,7 @@ const queryParams = new URLSearchParams(location.search);
   const config = {
     timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     format: "h23",
+    showSeconds: true,
     backColor: "#ffffff",
     colorOne: "#000000",
     colorTwo: "#666666",
@@ -44,6 +45,7 @@ const queryParams = new URLSearchParams(location.search);
   }
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
   gui.add(config, "format", {"24 hour": "h23", "12 hour": "h12"});
+  gui.add(config, "showSeconds").onChange(updateLayout);
   gui.addColor(config, "backColor").name("background color").onChange(updateColors);
   gui.addColor(config, "colorOne").name("color one").onChange(updateColors);
   gui.addColor(config, "colorTwo").name("color two").onChange(updateColors);
@@ -54,6 +56,23 @@ const queryParams = new URLSearchParams(location.search);
     back.material.color.setStyle(config.backColor);
     setDigitColors(1, config.colorOne);
     setDigitColors(0, config.colorTwo);
+  }
+
+  function updateLayout() {
+    digits[4].visible = config.showSeconds;
+    digits[5].visible = config.showSeconds;
+    const scale =  config.showSeconds ? 1.5 : 2;
+    const ySpacing = config.showSeconds ? 1.4 : 1.8;
+    const yOffset = config.showSeconds ? 0.65 : -0.1;
+    const xSpacing = config.showSeconds ? 0.6 : 0.7;
+    const xOffset = config.showSeconds ? 0.45 : 0.6;
+    for (let i = 0; i < digits.length; i++) {
+      const digit = digits[i];
+      digit.scale.setScalar(scale);
+      digit.position.x = (i % 2 === 0 ? -xSpacing : xSpacing) - xOffset;
+      digit.position.y = (Math.ceil(-i / 2) * ySpacing + ySpacing) + yOffset;
+      digit.position.z = 0.1;
+    }
   }
 
   const textureLoader = new THREE.TextureLoader();
@@ -107,17 +126,10 @@ const queryParams = new URLSearchParams(location.search);
     new Spline3(svgs, config.colorOne, config.colorTwo),
     new Spline3(svgs, config.colorOne, config.colorTwo),
   ];
-  const ySpacing = 1.4;
-  const yOffset = 0.65;
-  const xSpacing = 0.6;
-  const xOffset = 0.45;
   for (let i = 0; i < digits.length; i++) {
-    const digit = digits[i];
-    digit.position.x = (i % 2 === 0 ? -xSpacing : xSpacing) - xOffset;
-    digit.position.y = (Math.ceil(-i / 2) * ySpacing + ySpacing) + yOffset;
-    digit.position.z = 0.1;
-    scene.add(digit);
+    scene.add(digits[i]);
   }
+  updateLayout();
 
   const renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
   renderer.render2d = queryParams.has("2d") || config.render2d;
@@ -132,9 +144,7 @@ const queryParams = new URLSearchParams(location.search);
     new OrbitControls(camera, renderer.domElement);
   }
 
-  const clock = new THREE.Clock();
   renderer.webglRenderer.setAnimationLoop((time) => {
-    const delta = clock.getDelta();
     stats.update();
 
     if (time > 3000) {
