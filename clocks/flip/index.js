@@ -17,6 +17,7 @@ const queryParams = new URLSearchParams(location.search);
   const config = {
     timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     format: "h23",
+    showSeconds: true,
     backColor: "#ffffff",
     digitBackColor: "#000000",
     digitForeColor: "#ffffff",
@@ -34,6 +35,7 @@ const queryParams = new URLSearchParams(location.search);
   gui.remember(config);
   gui.add(config, "timeZone", timeZoneOptions).name("time zone");
   gui.add(config, "format", { "24 hour": "h23", "12 hour": "h12" });
+  gui.add(config, "showSeconds").onChange(() => clock.updateLayout(config.showSeconds));
   gui.addColor(config, "backColor").name("background color").onChange(updateColors);
   gui.addColor(config, "digitBackColor").name("digit back color").onChange(updateColors);
   gui.addColor(config, "digitForeColor").name("digit color").onChange(updateColors);
@@ -78,7 +80,7 @@ const queryParams = new URLSearchParams(location.search);
   back.position.z = -1;
   scene.add(back);
 
-  const clock = new Clock(noiseImageData, brushedImageData);
+  const clock = new Clock(noiseImageData, brushedImageData, config.showSeconds);
   clock.scale.setScalar(0.8);
   clock.setDigitBackColor(config.digitBackColor);
   clock.setDigitForeColor(config.digitForeColor);

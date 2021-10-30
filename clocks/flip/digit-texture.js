@@ -36,7 +36,7 @@ function getCanvases(noiseImageData, brushedImageData, backColor, foreColor, dig
     normalCtx.drawImage(digitNormalCanvas, 0, 0);
 
     const [ormCanvas, ormCtx] = makeCanvas();
-    drawDigit(ormCtx, digit, "#004422", "#004488");
+    drawDigit(ormCtx, digit, "#004404", "#004433");
 
     const [mapCanvas, mapCtx] = makeCanvas();
     drawDigit(mapCtx, digit, backColor, foreColor);

@@ -94,7 +94,7 @@ export class Digit extends THREE.Object3D {
   }
 
   set(n, force) {
-    if (this.current === n && !force) return;
+    if (this.visible !== false && this.current === n && !force) return;
     addDigitTextures(this.noiseImageData, this.brushedImageData, this.backColor, this.foreColor, this.staticTop, n, false);
     addDigitTextures(this.noiseImageData, this.brushedImageData, this.backColor, this.foreColor, this.rotatingNext, n, true);
     this.setCurrent();
